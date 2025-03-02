@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>イケメンとじゃんけんゲーム</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Hiragino Sans', 'Meiryo', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+        .game-area {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .character-area {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .character {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .character-face {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #opponent-face {
+            font-size: 100px;
+            background-color: #e8f4fc;
+        }
+        #player-face {
+            font-size: 80px;
+        }
+        .character-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .choices {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+        .choice {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s;
+            font-size: 40px;
+            background-color: #f8f9fa;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .choice:hover {
+            transform: scale(1.1);
+            background-color: #e9ecef;
+        }
+        .result-area {
+            margin: 20px 0;
+            font-size: 18px;
+            min-height: 80px;
+        }
+        .hands {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .hand {
+            font-size: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 100px;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .show {
+            opacity: 1;
+        }
+        .score {
+            display: flex;
+            justify-content: space-around;
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            height: 30px;
+            color: #3498db;
+        }
+        .reset {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .reset:hover {
+            background-color: #2980b9;
+        }
+        .emotion {
+            font-size: 20px;
+            height: 30px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>イケメンとじゃんけんゲーム</h1>
+    
+    <div class="game-area">
+        <div class="message" id="message">じゃんけん...</div>
+        
+        <div class="character-area">
+            <div class="character">
+                <div class="character-face" id="player-face">😊</div>
+                <div class="character-name">あなた</div>
+                <div class="emotion" id="player-emotion"></div>
+            </div>
+            <div class="character">
+                <div class="character-face" id="opponent-face">🥺</div>
+                <div class="character-name">イケメン・ハンサム</div>
+                <div class="emotion" id="opponent-emotion"></div>
+            </div>
+        </div>
+        
+        <div class="hands">
+            <div class="hand" id="player-hand">👊</div>
+            <div class="hand" id="computer-hand">👊</div>
+        </div>
+        
+        <div class="choices">
+            <button class="choice" id="rock">👊</button>
+            <button class="choice" id="scissors">✌️</button>
+            <button class="choice" id="paper">✋</button>
+        </div>
+        
+        <div class="result-area" id="result"></div>
+        
+        <div class="score">
+            <div>あなた: <span id="player-score">0</span></div>
+            <div>イケメン: <span id="computer-score">0</span></div>
+        </div>
+        
+        <button class="reset" id="reset">リセット</button>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const choices = ['rock', 'scissors', 'paper'];
+            const emojis = {
+                'rock': '👊',
+                'scissors': '✌️',
+                'paper': '✋'
+            };
+            const japaneseNames = {
+                'rock': 'グー',
+                'scissors': 'チョキ',
+                'paper': 'パー'
+            };
+            
+            // イケメンキャラクターの表情
+            const opponentEmotions = {
+                'neutral': '😎',  // クール
+                'win': '😏',      // ドヤ顔
+                'lose': '😳',     // ショック
+                'draw': '🤔'      // 考え中
+            };
+            
+            // プレイヤーの表情
+            const playerEmotions = {
+                'neutral': '😊',  // 普通
+                'win': '😄',      // 嬉しい
+                'lose': '😞',     // 悲しい
+                'draw': '😐'      // 真顔
+            };
+            
+            let playerScore = 0;
+            let computerScore = 0;
+            
+            const playerHand = document.getElementById('player-hand');
+            const computerHand = document.getElementById('computer-hand');
+            const playerScoreElement = document.getElementById('player-score');
+            const computerScoreElement = document.getElementById('computer-score');
+            const resultElement = document.getElementById('result');
+            const messageElement = document.getElementById('message');
+            const opponentFace = document.getElementById('opponent-face');
+            const playerFace = document.getElementById('player-face');
+            const opponentEmotion = document.getElementById('opponent-emotion');
+            const playerEmotion = document.getElementById('player-emotion');
+            
+            // キャラクターセットアップ
+            opponentFace.textContent = opponentEmotions.neutral;
+            playerFace.textContent = playerEmotions.neutral;
+            
+            // じゃんけんの結果を決定
+            function getResult(playerChoice, computerChoice) {
+                if (playerChoice === computerChoice) {
+                    return 'draw';
+                }
+                
+                if (
+                    (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                    (playerChoice === 'scissors' && computerChoice === 'paper') ||
+                    (playerChoice === 'paper' && computerChoice === 'rock')
+                ) {
+                    return 'win';
+                }
+                
+                return 'lose';
+            }
+            
+            // セリフをランダムに選ぶ
+            function getRandomMessage(type) {
+                const messages = {
+                    'win': [
+                        "くっ...さすがだね！",
+                        "負けた...強いな君！",
+                        "まさか負けるとは...！"
+                    ],
+                    'lose': [
+                        "ふふふ、僕の勝ちだね",
+                        "残念！もう一回チャレンジする？",
+                        "勝った！やっぱり僕は強いね"
+                    ],
+                    'draw': [
+                        "おっと、考えることは同じだったね",
+                        "あいこか...次こそは決着をつけよう",
+                        "むむ、あいこだ！"
+                    ]
+                };
+                
+                return messages[type][Math.floor(Math.random() * messages[type].length)];
+            }
+            
+            // ゲーム実行
+            function playGame(playerChoice) {
+                // アニメーション開始
+                playerHand.classList.remove('show');
+                computerHand.classList.remove('show');
+                
+                messageElement.textContent = 'じゃんけん...';
+                opponentEmotion.textContent = '';
+                playerEmotion.textContent = '';
+                
+                // コンピューターの選択
+                const computerChoice = choices[Math.floor(Math.random() * 3)];
+                
+                setTimeout(() => {
+                    // 選択を表示
+                    playerHand.textContent = emojis[playerChoice];
+                    computerHand.textContent = emojis[computerChoice];
+                    
+                    playerHand.classList.add('show');
+                    computerHand.classList.add('show');
+                    
+                    // 結果を判定
+                    const result = getResult(playerChoice, computerChoice);
+                    
+                    // 結果を表示
+                    switch (result) {
+                        case 'win':
+                            resultElement.textContent = `あなたの${japaneseNames[playerChoice]}は、イケメンの${japaneseNames[computerChoice]}に勝ちました！`;
+                            messageElement.textContent = 'あなたの勝ち！';
+                            opponentFace.textContent = opponentEmotions.lose;
+                            playerFace.textContent = playerEmotions.win;
+                            opponentEmotion.textContent = getRandomMessage('win');
+                            playerScore++;
+                            playerScoreElement.textContent = playerScore;
+                            break;
+                        case 'lose':
+                            resultElement.textContent = `あなたの${japaneseNames[playerChoice]}は、イケメンの${japaneseNames[computerChoice]}に負けました...`;
+                            messageElement.textContent = 'イケメンの勝ち';
+                            opponentFace.textContent = opponentEmotions.win;
+                            playerFace.textContent = playerEmotions.lose;
+                            opponentEmotion.textContent = getRandomMessage('lose');
+                            computerScore++;
+                            computerScoreElement.textContent = computerScore;
+                            break;
+                        case 'draw':
+                            resultElement.textContent = `あなたもイケメンも${japaneseNames[playerChoice]}を出しました。`;
+                            messageElement.textContent = 'あいこ！';
+                            opponentFace.textContent = opponentEmotions.draw;
+                            playerFace.textContent = playerEmotions.draw;
+                            opponentEmotion.textContent = getRandomMessage('draw');
+                            break;
+                    }
+                }, 500);
+            }
+            
+            // ボタンイベント設定
+            document.getElementById('rock').addEventListener('click', () => playGame('rock'));
+            document.getElementById('scissors').addEventListener('click', () => playGame('scissors'));
+            document.getElementById('paper').addEventListener('click', () => playGame('paper'));
+            
+            // リセットボタン
+            document.getElementById('reset').addEventListener('click', () => {
+                playerScore = 0;
+                computerScore = 0;
+                playerScoreElement.textContent = '0';
+                computerScoreElement.textContent = '0';
+                resultElement.textContent = '';
+                messageElement.textContent = 'じゃんけん...';
+                playerHand.classList.remove('show');
+                computerHand.classList.remove('show');
+                opponentFace.textContent = opponentEmotions.neutral;
+                playerFace.textContent = playerEmotions.neutral;
+                opponentEmotion.textContent = '';
+                playerEmotion.textContent = '';
+            });
+        });
+    </script>
+</body>
+</html>
